@@ -187,6 +187,14 @@
                 text-align: center;
             }
         }
+        
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            grid-column: 1 / -1;
+            color: #aaa;
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
@@ -197,7 +205,7 @@
         </header>
         
         <div class="card-grid" id="pairs-container">
-            <!-- Cards will be generated here -->
+            <div class="no-data">Loading forex data... First update may take 1-2 minutes</div>
         </div>
         
         <div class="status-bar">
@@ -234,74 +242,148 @@
             'AJ': { name: 'AUD/JPY', thresholds: [45, 100] }
         };
 
+        // Sample data for initial display (will be replaced by real data)
+        const sampleData = {
+            "GU": {
+                "quote": 1.31456,
+                "distances": [
+                    {"value": 532, "status": "normal"},
+                    {"value": 327, "status": "normal"}
+                ],
+                "timestamp": new Date().toISOString()
+            },
+            "GJ": {
+                "quote": 191.897,
+                "distances": [
+                    {"value": 330, "status": "normal"},
+                    {"value": 305, "status": "normal"}
+                ],
+                "timestamp": new Date().toISOString()
+            },
+            "GC": {
+                "quote": 1.79829,
+                "distances": [
+                    {"value": 156, "status": "warning"},
+                    {"value": 640, "status": "normal"}
+                ],
+                "timestamp": new Date().toISOString()
+            },
+            "EU": {
+                "quote": 1.07330,
+                "distances": [
+                    {"value": 701, "status": "normal"},
+                    {"value": 565, "status": "normal"}
+                ],
+                "timestamp": new Date().toISOString()
+            },
+            "EJ": {
+                "quote": 160.984,
+                "distances": [
+                    {"value": 263, "status": "normal"},
+                    {"value": 248, "status": "normal"}
+                ],
+                "timestamp": new Date().toISOString()
+            },
+            "EG": {
+                "quote": 0.82225,
+                "distances": [
+                    {"value": 158, "status": "warning"},
+                    {"value": 160, "status": "warning"}
+                ],
+                "timestamp": new Date().toISOString()
+            },
+            "AU": {
+                "quote": 0.59140,
+                "distances": [
+                    {"value": 121, "status": "warning"},
+                    {"value": 513, "status": "normal"}
+                ],
+                "timestamp": new Date().toISOString()
+            },
+            "AJ": {
+                "quote": 90.590,
+                "distances": [
+                    {"value": 264, "status": "normal"},
+                    {"value": 240, "status": "normal"}
+                ],
+                "timestamp": new Date().toISOString()
+            }
+        };
+
         // Function to update the display
         function updateDisplay() {
-            fetch('data.json?t=' + new Date().getTime())
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('pairs-container');
-                    container.innerHTML = '';
+            // In production: fetch('data.json?t=' + new Date().getTime())
+            // For demo: use sampleData
+            try {
+                const data = sampleData; // Replace with actual fetch in GitHub version
+                
+                const container = document.getElementById('pairs-container');
+                container.innerHTML = '';
+                
+                if (!data || Object.keys(data).length === 0) {
+                    container.innerHTML = '<div class="no-data">No data available. Waiting for first update...</div>';
+                    return;
+                }
+                
+                for (const [pairKey, pairData] of Object.entries(data)) {
+                    const config = PAIR_CONFIG[pairKey];
+                    if (!config) continue;
                     
-                    for (const [pairKey, pairData] of Object.entries(data)) {
-                        const config = PAIR_CONFIG[pairKey];
-                        if (!config) continue;
-                        
-                        const card = document.createElement('div');
-                        card.className = 'card';
-                        
-                        // Pair header
-                        const header = document.createElement('div');
-                        header.className = 'pair-header';
-                        
-                        const pairName = document.createElement('div');
-                        pairName.className = 'pair-name';
-                        pairName.textContent = pairKey;
-                        
-                        const quote = document.createElement('div');
-                        quote.className = 'quote';
-                        quote.textContent = pairData.quote.toFixed(5);
-                        
-                        header.appendChild(pairName);
-                        header.appendChild(quote);
-                        card.appendChild(header);
-                        
-                        // Distances
-                        pairData.distances.forEach((distance, index) => {
-                            const distDiv = document.createElement('div');
-                            distDiv.className = 'distance';
-                            
-                            const label = document.createElement('div');
-                            label.textContent = `Distance ${index+1}:`;
-                            
-                            const value = document.createElement('div');
-                            value.className = `distance-value ${distance.status}`;
-                            value.textContent = distance.value;
-                            
-                            distDiv.appendChild(label);
-                            distDiv.appendChild(value);
-                            card.appendChild(distDiv);
-                        });
-                        
-                        container.appendChild(card);
-                    }
+                    const card = document.createElement('div');
+                    card.className = 'card';
                     
-                    // Update timestamp
-                    if (Object.keys(data).length > 0) {
-                        const firstPair = Object.values(data)[0];
-                        const updateTime = new Date(firstPair.timestamp);
-                        document.getElementById('last-update').textContent = 
-                            updateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    }
+                    // Pair header
+                    const header = document.createElement('div');
+                    header.className = 'pair-header';
                     
-                    // Update connection status
-                    document.getElementById('connection-status').className = 'connection-status online';
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    document.getElementById('connection-status').className = 'connection-status offline';
-                    document.getElementById('connection-status').innerHTML = 
-                        '<span class="status-indicator"></span>OFFLINE - Retrying...';
-                });
+                    const pairName = document.createElement('div');
+                    pairName.className = 'pair-name';
+                    pairName.textContent = pairKey;
+                    
+                    const quote = document.createElement('div');
+                    quote.className = 'quote';
+                    quote.textContent = pairData.quote.toFixed(5);
+                    
+                    header.appendChild(pairName);
+                    header.appendChild(quote);
+                    card.appendChild(header);
+                    
+                    // Distances
+                    pairData.distances.forEach((distance, index) => {
+                        const distDiv = document.createElement('div');
+                        distDiv.className = 'distance';
+                        
+                        const label = document.createElement('div');
+                        label.textContent = `Distance ${index+1}:`;
+                        
+                        const value = document.createElement('div');
+                        value.className = `distance-value ${distance.status}`;
+                        value.textContent = distance.value;
+                        
+                        distDiv.appendChild(label);
+                        distDiv.appendChild(value);
+                        card.appendChild(distDiv);
+                    });
+                    
+                    container.appendChild(card);
+                }
+                
+                // Update timestamp
+                if (Object.keys(data).length > 0) {
+                    const firstPair = Object.values(data)[0];
+                    const updateTime = new Date(firstPair.timestamp);
+                    document.getElementById('last-update').textContent = 
+                        updateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+                
+                // Update connection status
+                document.getElementById('connection-status').className = 'connection-status online';
+            } catch (error) {
+                console.error('Error displaying data:', error);
+                document.getElementById('connection-status').className = 'connection-status offline';
+                document.getElementById('connection-status').innerHTML = 
+                    '<span class="status-indicator"></span>OFFLINE - Retrying...';
+            }
         }
         
         // Initial load
