@@ -242,7 +242,7 @@
             'AJ': { name: 'AUD/JPY', thresholds: [45, 100] }
         };
 
-        // Sample data for initial display (will be replaced by real data)
+        // Sample data for initial display - NOW WITH CORRECT STATUS
         const sampleData = {
             "GU": {
                 "quote": 1.31456,
@@ -263,7 +263,8 @@
             "GC": {
                 "quote": 1.79829,
                 "distances": [
-                    {"value": 156, "status": "warning"},
+                    // 156 > 100 - should be GREEN
+                    {"value": 156, "status": "normal"},
                     {"value": 640, "status": "normal"}
                 ],
                 "timestamp": new Date().toISOString()
@@ -287,15 +288,18 @@
             "EG": {
                 "quote": 0.82225,
                 "distances": [
-                    {"value": 158, "status": "warning"},
-                    {"value": 160, "status": "warning"}
+                    // 158 > 100 - should be GREEN
+                    {"value": 158, "status": "normal"},
+                    // 160 > 100 - should be GREEN
+                    {"value": 160, "status": "normal"}
                 ],
                 "timestamp": new Date().toISOString()
             },
             "AU": {
                 "quote": 0.59140,
                 "distances": [
-                    {"value": 121, "status": "warning"},
+                    // 121 > 100 - should be GREEN
+                    {"value": 121, "status": "normal"},
                     {"value": 513, "status": "normal"}
                 ],
                 "timestamp": new Date().toISOString()
