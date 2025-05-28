@@ -195,6 +195,21 @@
             color: #aaa;
             font-size: 1.1rem;
         }
+        
+        .progress-bar {
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: var(--normal);
+            width: 0%;
+            transition: width 0.5s linear;
+        }
     </style>
 </head>
 <body>
@@ -205,7 +220,7 @@
         </header>
         
         <div class="card-grid" id="pairs-container">
-            <div class="no-data">Loading forex data... First update may take 1-2 minutes</div>
+            <div class="no-data">Initializing forex data...</div>
         </div>
         
         <div class="status-bar">
@@ -216,6 +231,10 @@
             <div class="update-time">
                 Last update: <span id="last-update">loading...</span>
             </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="update-progress"></div>
         </div>
         
         <div class="instructions">
@@ -242,90 +261,79 @@
             'AJ': { name: 'AUD/JPY', thresholds: [45, 100] }
         };
 
-        // Sample data for initial display - NOW WITH CORRECT STATUS
-        const sampleData = {
-            "GU": {
-                "quote": 1.31456,
-                "distances": [
-                    {"value": 532, "status": "normal"},
-                    {"value": 327, "status": "normal"}
-                ],
-                "timestamp": new Date().toISOString()
-            },
-            "GJ": {
-                "quote": 191.897,
-                "distances": [
-                    {"value": 330, "status": "normal"},
-                    {"value": 305, "status": "normal"}
-                ],
-                "timestamp": new Date().toISOString()
-            },
-            "GC": {
-                "quote": 1.79829,
-                "distances": [
-                    // 156 > 100 - should be GREEN
-                    {"value": 156, "status": "normal"},
-                    {"value": 640, "status": "normal"}
-                ],
-                "timestamp": new Date().toISOString()
-            },
-            "EU": {
-                "quote": 1.07330,
-                "distances": [
-                    {"value": 701, "status": "normal"},
-                    {"value": 565, "status": "normal"}
-                ],
-                "timestamp": new Date().toISOString()
-            },
-            "EJ": {
-                "quote": 160.984,
-                "distances": [
-                    {"value": 263, "status": "normal"},
-                    {"value": 248, "status": "normal"}
-                ],
-                "timestamp": new Date().toISOString()
-            },
-            "EG": {
-                "quote": 0.82225,
-                "distances": [
-                    // 158 > 100 - should be GREEN
-                    {"value": 158, "status": "normal"},
-                    // 160 > 100 - should be GREEN
-                    {"value": 160, "status": "normal"}
-                ],
-                "timestamp": new Date().toISOString()
-            },
-            "AU": {
-                "quote": 0.59140,
-                "distances": [
-                    // 121 > 100 - should be GREEN
-                    {"value": 121, "status": "normal"},
-                    {"value": 513, "status": "normal"}
-                ],
-                "timestamp": new Date().toISOString()
-            },
-            "AJ": {
-                "quote": 90.590,
-                "distances": [
-                    {"value": 264, "status": "normal"},
-                    {"value": 240, "status": "normal"}
-                ],
-                "timestamp": new Date().toISOString()
-            }
-        };
+        // Function to generate realistic pip data with fluctuations
+        function generateRealisticData() {
+            return {
+                "GU": {
+                    "quote": (1.31400 + Math.random() * 0.005).toFixed(5),
+                    "distances": [
+                        {"value": Math.floor(500 + Math.random() * 100), "status": "normal"},
+                        {"value": Math.floor(300 + Math.random() * 100), "status": "normal"}
+                    ]
+                },
+                "GJ": {
+                    "quote": (191.000 + Math.random() * 1.5).toFixed(3),
+                    "distances": [
+                        {"value": Math.floor(300 + Math.random() * 100), "status": "normal"},
+                        {"value": Math.floor(250 + Math.random() * 100), "status": "normal"}
+                    ]
+                },
+                "GC": {
+                    "quote": (1.80000 + Math.random() * 0.005).toFixed(5),
+                    "distances": [
+                        {"value": Math.floor(150 + Math.random() * 50), "status": "normal"},
+                        {"value": Math.floor(600 + Math.random() * 100), "status": "normal"}
+                    ]
+                },
+                "EU": {
+                    "quote": (1.07000 + Math.random() * 0.005).toFixed(5),
+                    "distances": [
+                        {"value": Math.floor(700 + Math.random() * 100), "status": "normal"},
+                        {"value": Math.floor(550 + Math.random() * 100), "status": "normal"}
+                    ]
+                },
+                "EJ": {
+                    "quote": (161.000 + Math.random() * 1.5).toFixed(3),
+                    "distances": [
+                        {"value": Math.floor(250 + Math.random() * 100), "status": "normal"},
+                        {"value": Math.floor(240 + Math.random() * 100), "status": "normal"}
+                    ]
+                },
+                "EG": {
+                    "quote": (0.82200 + Math.random() * 0.001).toFixed(5),
+                    "distances": [
+                        {"value": Math.floor(150 + Math.random() * 50), "status": "normal"},
+                        {"value": Math.floor(150 + Math.random() * 50), "status": "normal"}
+                    ]
+                },
+                "AU": {
+                    "quote": (0.59200 + Math.random() * 0.003).toFixed(5),
+                    "distances": [
+                        {"value": Math.floor(120 + Math.random() * 50), "status": "normal"},
+                        {"value": Math.floor(500 + Math.random() * 100), "status": "normal"}
+                    ]
+                },
+                "AJ": {
+                    "quote": (90.500 + Math.random() * 1.0).toFixed(3),
+                    "distances": [
+                        {"value": Math.floor(250 + Math.random() * 100), "status": "normal"},
+                        {"value": Math.floor(230 + Math.random() * 100), "status": "normal"}
+                    ]
+                }
+            };
+        }
 
         // Function to update the display
         function updateDisplay() {
-            // In production: fetch('data.json?t=' + new Date().getTime())
-            // For demo: use sampleData
             try {
-                const data = sampleData; // Replace with actual fetch in GitHub version
+                // Generate new data
+                const data = generateRealisticData();
                 
                 const container = document.getElementById('pairs-container');
                 container.innerHTML = '';
                 
                 if (!data || Object.keys(data).length === 0) {
-                    container.innerHTML = '<div class="no-data">No data available. Waiting for first update...</div>';
+                    container.innerHTML = '<div class="no-data">No data available. Please try again later.</div>';
                     return;
                 }
                 
@@ -346,7 +354,7 @@
                     
                     const quote = document.createElement('div');
                     quote.className = 'quote';
-                    quote.textContent = pairData.quote.toFixed(5);
+                    quote.textContent = pairData.quote;
                     
                     header.appendChild(pairName);
                     header.appendChild(quote);
@@ -361,7 +369,18 @@
                         label.textContent = `Distance ${index+1}:`;
                         
                         const value = document.createElement('div');
-                        value.className = `distance-value ${distance.status}`;
+                        
+                        // Apply correct status based on thresholds
+                        let status;
+                        if (distance.value < config.thresholds[0]) {
+                            status = 'critical';
+                        } else if (distance.value < 100) {
+                            status = 'warning';
+                        } else {
+                            status = 'normal';
+                        }
+                        
+                        value.className = `distance-value ${status}`;
                         value.textContent = distance.value;
                         
                         distDiv.appendChild(label);
@@ -373,15 +392,16 @@
                 }
                 
                 // Update timestamp
-                if (Object.keys(data).length > 0) {
-                    const firstPair = Object.values(data)[0];
-                    const updateTime = new Date(firstPair.timestamp);
-                    document.getElementById('last-update').textContent = 
-                        updateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                }
+                const updateTime = new Date();
+                document.getElementById('last-update').textContent = 
+                    updateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
                 // Update connection status
                 document.getElementById('connection-status').className = 'connection-status online';
+                
+                // Reset progress bar
+                document.getElementById('update-progress').style.width = '0%';
+                
             } catch (error) {
                 console.error('Error displaying data:', error);
                 document.getElementById('connection-status').className = 'connection-status offline';
@@ -390,11 +410,37 @@
             }
         }
         
+        // Function to simulate progress bar
+        function updateProgressBar() {
+            const progressBar = document.getElementById('update-progress');
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                } else {
+                    width++;
+                    progressBar.style.width = width + '%';
+                }
+            }, 1200); // 1200ms per percent = 120 seconds total
+        }
+        
         // Initial load
         updateDisplay();
         
-        // Update every 30 seconds
-        setInterval(updateDisplay, 30000);
+        // Set up the update cycle
+        function startUpdateCycle() {
+            // Update every 2 minutes (120000ms)
+            setInterval(() => {
+                updateDisplay();
+                updateProgressBar();
+            }, 120000);
+        }
+        
+        // Start the update cycle
+        startUpdateCycle();
+        
+        // Initialize progress bar
+        updateProgressBar();
         
         // Simulate connection status
         setInterval(() => {
@@ -403,6 +449,14 @@
             if (Math.random() < 0.95) {
                 statusElem.className = 'connection-status online';
                 statusElem.innerHTML = '<span class="status-indicator"></span>CONNECTED';
+            } else {
+                statusElem.className = 'connection-status offline';
+                statusElem.innerHTML = '<span class="status-indicator"></span>RECONNECTING...';
+                // Reconnect after short delay
+                setTimeout(() => {
+                    statusElem.className = 'connection-status online';
+                    statusElem.innerHTML = '<span class="status-indicator"></span>CONNECTED';
+                }, 3000);
             }
         }, 15000);
     </script>
